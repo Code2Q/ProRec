@@ -11,7 +11,7 @@ from os.path import join
 from model import *
 
 args = parse_args()
-ROOT_PATH = "/home/zoulixin/scratch/yq_code/rec"
+ROOT_PATH = "../rec"
 print(f"ROOT_PATH {ROOT_PATH}")
 CODE_PATH = ROOT_PATH
 CHECKPOINT_PATH = join(ROOT_PATH, 'checkpoints')
@@ -67,13 +67,3 @@ for epoch in range(args.epochs):
     # print(f'EPOCH[{epoch+1}/{world.TRAIN_epochs}] {output_information}')
     # torch.save(Recmodel.state_dict(), weight_file)
 
-plt.figure(figsize=(12, 5))
-# plt.subplot(1, 2, 1)
-plt.plot(recall_epoch, test_recall, 'bo-', label='Testing Recall')
-plt.title('Testing Recall')
-plt.xlabel('Epochs')
-plt.ylabel('Recall')
-plt.legend()
-plt.tight_layout()
-plt.savefig('./recall_plot.jpg')
-plt.show()

@@ -268,8 +268,7 @@ class Loader(BasicDataset):
         return posItems
     
     def get_subgraph(self):
-        # if self.dataname == 'ml-1M':
-        #     file ='/home/zoulixin/scratch/yq_code/rec/datasets/{}/{}_sparse_subgraph500_hop8_coo_new.npz'.format(self.dataname, self.dataname) 
+
         file ='/home/zoulixin/scratch/yq_code/rec/datasets/{}/{}_sparse_subgraph500_hop8_coo.npz'.format(self.dataname, self.dataname) 
         coo = load_npz(file)
         if self.dataname == 'ml-1M':
@@ -375,21 +374,19 @@ class PointWise_Loader(BasicDataset):
 
         self.UserItemNet = csr_matrix((np.ones(len(self.trainUser)), (self.trainUser, self.trainItem)),
                                       shape=(self.n_users, self.m_items))
-        #计算训练数据集 每个用户对应行的非零元素总和，即该用户与多少个物品发生了交互。
+ 
         self.users_D = np.array(self.UserItemNet.sum(axis=1)).squeeze()
-        #这将用户的度中为零的值（表示没有交互）替换为 1，以避免分母为零的情况。
+
         self.users_D[self.users_D == 0.] = 1
         self.items_D = np.array(self.UserItemNet.sum(axis=0)).squeeze()
         self.items_D[self.items_D == 0.] = 1.
         # pre-calculate
-        #获取所有用户的正向交互物品列表
         self._allPos = self.getUserPosItems(list(range(self.n_user)))
         self.__testDict = self.__build_test()
         # self.Graph = self.getNetworkxGraph()
         self.Graph = self.getSparseGraph()
         
         print(f" networkx graph is loaded : {self.Graph}")
-        # print(f"Beauty dataset is ready to go")
 
     @property
     def n_users(self):

@@ -20,17 +20,8 @@ print(f"MODEL_PATH: {CHECKPOINT_PATH}")
 if not os.path.exists(CHECKPOINT_PATH):
     os.makedirs(CHECKPOINT_PATH, exist_ok=True)
 
-# weight_file = '../checkpoints/outfile-Beauty-4-epoch38-cl2-dim128-norelu_concat.pth.tar'
-# weight_file = '../checkpoints/outfile-Beauty-4-epoch34-cl2-prompt-Apool-clampfix-relu.pth.tar'
 
 weight_file = '../checkpoints/outfile-Beauty-4-epoch37-cl2-Pretrain-token5-0103.pth.tar'
-
-#token 15
-# weight_file = '../checkpoints/outfile-Beauty-4-epoch43-cl2-Pretrain-token15-0104.pth.tar'
-
-
-# beauty and yelp
-# weight_file = '/home/zoulixin/scratch/yq_code/rec/checkpoints/yelp2018-pre-beauty-4-epoch13-cl2.pth.tar'
 pretrained_state_dict = torch.load(weight_file)
 
 #set seed and device
@@ -93,13 +84,3 @@ for epoch in range(args.epochs):
     # print(f'EPOCH[{epoch+1}/{world.TRAIN_epochs}] {output_information}')
     # torch.save(Recmodel.state_dict(), weight_file)
 
-plt.figure(figsize=(12, 5))
-# plt.subplot(1, 2, 1)
-plt.plot(recall_epoch, test_recall, 'bo-', label='Testing Recall')
-plt.title('Testing Recall')
-plt.xlabel('Epochs')
-plt.ylabel('Recall')
-plt.legend()
-plt.tight_layout()
-plt.savefig('./recall_plot.jpg')
-plt.show()

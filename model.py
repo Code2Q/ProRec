@@ -180,12 +180,6 @@ class LightGCN(BasicModel):
         return graph
     
     def cal_cl_loss(self, idx, user_view1,user_view2,item_view1,item_view2):
-        # if args.dataset in ['gowalla', 'yelp2018']:
-        #     u_idx = torch.unique(torch.Tensor(idx[0]).type(torch.long)).cuda()
-        #     i_idx = torch.unique(torch.Tensor(idx[1]).type(torch.long)).cuda()
-        #     user_cl_loss = InfoNCE(user_view1[u_idx], user_view2[u_idx], self.temp)
-        #     item_cl_loss = InfoNCE(item_view1[i_idx], item_view2[i_idx], self.temp)
-        # else:
         user_cl_loss = InfoNCE(user_view1, user_view2, self.temp)
         item_cl_loss = InfoNCE(item_view1, item_view2, self.temp)
         return user_cl_loss + item_cl_loss
@@ -257,74 +251,9 @@ class LightGCN(BasicModel):
             item_sdne = self.attentive_pool(item_sdne) 
         else: item_sdne = torch.mean(item_sdne, dim=1, keepdim=False)
         del item_g
-        
-        # all_users, all_items, = self.computer()
-        # users_tensors = all_users[users.long()]
-        # items_tensors = all_items[items.long()]
-        # users_emb = users_tensors + users_sdne
-        # items_emb = items_tensors + item_sdne
+
         users_emb = users_sdne
         items_emb = item_sdne
-
-
-        # if b==1:
-        #     plt.clf()
-        #     u = users_emb.clone().detach().cpu().numpy()
-        #     i = items_emb.clone().detach().cpu().numpy()
-        #     pca = PCA(n_components=1)
-        #     u = pca.fit_transform(u)
-        #     i = pca.fit_transform(i)
-        #     # print(u.shape)
-        #     # sns.kdeplot(x=u[:, 0], y=u[:, 1], label='User', fill=True, cmap='Blues', alpha=0.7)
-        #     # sns.kdeplot(x=i[:, 0], y=i[:, 1], label='Item', fill=True, cmap='Oranges', alpha=0.7)
-        #     sns.kdeplot(x=u.flatten(), linewidth=2,label='User', fill=True, color=(168/256,172/256,214/256), alpha=0.7)
-        #     sns.kdeplot(x=i.flatten(), linewidth=2,label='Item', fill=True, color=(178/256,225/256,185/256), alpha=0.7)
-        #     # plt.xlim(-0.5, 0.5)
-        #     plt.legend()
-        #     plt.xlabel('UPTRec-Fused')
-        #     plt.gcf().set_dpi(300)
-        #     plt.savefig(f'kde-1d-epoch{b}-fused.jpg', dpi=300, bbox_inches='tight', format='jpg')
-        #     plt.show()
-
-        #     plt.clf()
-        #     up = users_sdne.clone().detach().cpu().numpy()
-        #     ip = item_sdne.clone().detach().cpu().numpy()
-        #     pca = PCA(n_components=1)
-        #     u = pca.fit_transform(up)
-        #     i = pca.fit_transform(ip)
-        #     sns.kdeplot(x=u.flatten(), linewidth=2,label='User', fill=True, color=(168/256,172/256,214/256), alpha=0.7)
-        #     sns.kdeplot(x=i.flatten(), linewidth=2,label='Item' , fill=True, color=(178/256,225/256,185/256), alpha=0.7)
-        #     plt.legend()
-        #     plt.xlabel('UPTRec-Local')
-        #     plt.gcf().set_dpi(300)
-        #     plt.savefig(f'kde-1d-epoch{b}-local.jpg', dpi=300, bbox_inches='tight', format='jpg')
-        #     plt.show()
-
-        #     plt.clf()
-        #     up = all_users.clone().detach().cpu().numpy()
-        #     ip = all_items.clone().detach().cpu().numpy()
-        #     pca = PCA(n_components=1)
-        #     u = pca.fit_transform(up)
-        #     i = pca.fit_transform(ip)
-        #     sns.kdeplot(x=u.flatten(), linewidth=2,label='User', fill=True, color=(168/256,172/256,214/256), alpha=0.7)
-        #     sns.kdeplot(x=i.flatten(), linewidth=2,label='Item' , fill=True, color=(178/256,225/256,185/256), alpha=0.7)
-        #     plt.legend()
-        #     plt.xlabel('UPTRec-Global')
-        #     plt.gcf().set_dpi(300)
-        #     plt.savefig(f'kde-1d-epoch{b}-global.jpg', dpi=300, bbox_inches='tight', format='jpg')
-        #     plt.show() 
-        # ui = np.concatenate((u,i),axis=0)
-        # x_tsne = tsne.fit_transform(ui)
-        # y= [0] * self.num_users
-        # iy = [1] * self.num_items
-        # y.extend(iy)
-        # plt.scatter(x_tsne[:,0],x_tsne[:,1],c=y)
-        # plt.gcf().set_dpi(300)
-        # plt.savefig('visual.jpg', dpi=300, bbox_inches='tight', format='jpg')
-        # plt.show()
-        
-        # users_emb = users_sdne
-        # items_emb = item_sdne
 
         rating = torch.matmul(users_emb, items_emb.t())
 
@@ -379,39 +308,26 @@ class LightGCN(BasicModel):
             mean_node = self.attentive_pool(feat)
         else: mean_node = torch.mean(feat, dim=1, keepdim=False)
 
+        perturbed = True
 
-
-        # perturbed = True
-        # cl_loss = 0
-        # if perturbed:
-        #     (all_users, all_items, userEmb0,  posEmb0, negEmb0, users_cl, items_cl) = self.getEmbedding(users.long(), pos.long(), neg.long(), perturbed)
-        #     cl_loss = self.cl_rate * self.cal_cl_loss([users,pos],all_users,users_cl,all_items,items_cl)
+        if perturbed:
+            (all_users, all_items, userEmb0,  posEmb0, negEmb0, users_cl, items_cl) = self.getEmbedding(users.long(), pos.long(), neg.long(), perturbed)
+            cl_loss = self.cl_rate * self.cal_cl_loss([users,pos],all_users,users_cl,all_items,items_cl)
     
-        # else:
-        #     all_users, all_items, userEmb0,  posEmb0, negEmb0 = self.getEmbedding(users.long(), pos.long(), neg.long(), perturbed) 
+        else:
+            all_users, all_items, userEmb0,  posEmb0, negEmb0 = self.getEmbedding(users.long(), pos.long(), neg.long(), perturbed) 
         user_num = users.size()[0]
         pos_num = pos.size()[0]
 
 
-        # batch_users_emb = all_users[users] + mean_node[ : user_num, : ]
-        # batch_pos_emb = all_items[pos] + mean_node[ user_num : user_num  + pos_num, : ]
-        # batch_neg_emb = all_items[neg] + mean_node[ user_num + pos_num :, :]
+        batch_users_emb = all_users[users] + mean_node[ : user_num, : ]
+        batch_pos_emb = all_items[pos] + mean_node[ user_num : user_num  + pos_num, : ]
+        batch_neg_emb = all_items[neg] + mean_node[ user_num + pos_num :, :]
 
-        
-        batch_users_emb = mean_node[ : user_num, : ]
-        batch_pos_emb = mean_node[ user_num : user_num  + pos_num, : ]
-        batch_neg_emb = mean_node[ user_num + pos_num :, :] 
-        # sdne_loss, l2, l1 = 0, 0 ,0
+        reg_loss = (1/2)*(userEmb0.norm(2).pow(2) + 
+                         posEmb0.norm(2).pow(2)  +
+                         negEmb0.norm(2).pow(2))/float(len(users))
 
-        # reg_loss = (1/2)*(userEmb0.norm(2).pow(2) + 
-        #                  posEmb0.norm(2).pow(2)  +
-        #                  negEmb0.norm(2).pow(2))/float(len(users))
-        reg_loss=0
-        pos_scores = torch.mul(batch_users_emb, batch_pos_emb)
-        pos_scores = torch.sum(pos_scores, dim=1)
-        neg_scores = torch.mul(batch_users_emb, batch_neg_emb)
-        neg_scores = torch.sum(neg_scores, dim=1)
-        cl_loss = 0
         
         loss = torch.mean(torch.nn.functional.softplus(neg_scores - pos_scores))
         print(f"brp loss {loss}")
