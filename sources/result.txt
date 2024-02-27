@@ -1,0 +1,5 @@
+layer=3, data=Gowalla
+{'precision': array([0.05587447]),
+'recall': array([0.18190341]),
+'ndcg': array([0.1545573])
+}
